@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>R.STORE.com — متجر تجريبي</title>
+  <style>
+:root{
+  --bg-grad: linear-gradient(135deg,#1e90ff 0%, #7b8ea3 60%, #bfc8d6 100%);
+  --accent: #1e90ff;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --glass: rgba(255,255,255,0.08);
+  --dir: rtl;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;direction:var(--dir)}
+body{background:var(--bg-grad);color:#0b1220;}
+header{background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);padding:14px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:12px}
+.logo .mark{width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:8px;color:var(--accent);font-weight:700}
+.site-name{font-weight:800;color:#fff}
+.search{flex:1;display:flex;min-width:200px;margin-top:10px}
+.search input{flex:1;padding:10px 14px;border-radius:8px;border:none;outline:none}
+.search button{margin-left:8px;padding:10px 14px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:600}
+nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+nav a{color:#fff;text-decoration:none;padding:8px 10px;border-radius:6px;font-weight:700}
+nav a:hover{background:rgba(255,255,255,0.06)}
+
+main{max-width:1200px;margin:30px auto;padding:0 20px}
+.hero{display:flex;gap:20px;align-items:center;margin-bottom:20px}
+.hero .left{flex:1}
+.hero h1{margin:0;color:#fff;font-size:28px}
+.hero p{color:var(--muted);margin-top:8px}
+.hero .cta{margin-top:12px}
+.cta button{padding:10px 16px;border-radius:8px;border:none;background:#fff;color:var(--accent);font-weight:700}
+
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(11,18,32,0.08);display:flex;flex-direction:column;gap:10px}
+.card img{width:100%;height:160px;object-fit:cover;border-radius:8px}
+.price{font-weight:800;color:var(--accent)}
+.muted{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;margin-top:auto}
+.actions button{flex:1;padding:8px;border-radius:8px;border:none;font-weight:700}
+.btn-buy{background:var(--accent);color:#fff}
+.btn-wish{background:#f3f4f6}
+
+/* cart sidebar */
+.cart-toggle{position:fixed;left:20px;bottom:20px;background:var(--accent);color:#fff;padding:12px;border-radius:50%;box-shadow:0 8px 20px rgba(11,18,32,0.18);cursor:pointer}
+.cart-side{position:fixed;left:0;top:0;bottom:0;width:360px;background:#fff;transform:translateX(-110%);transition:transform .28s ease;box-shadow:8px 0 30px rgba(11,18,32,0.15);direction:ltr}
+.cart-side.open{transform:translateX(0)}
+.cart-side header{padding:14px;border-bottom:1px solid #eef2f7}
+.cart-body{padding:14px;overflow:auto;height:calc(100% - 140px)}
+.cart-item{display:flex;gap:10px;align-items:center;border-bottom:1px solid #f3f4f6;padding:10px 0}
+.cart-item img{width:64px;height:64px;object-fit:cover;border-radius:8px}
+.cart-footer{position:absolute;left:0;bottom:0;width:100%;padding:14px;border-top:1px solid #eef2f7;background:#fff}
+
+/* product modal */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.5)}
+.modal.open{display:flex}
+.modal .box{width:min(900px,96%);background:#fff;border-radius:12px;padding:16px;display:flex;gap:16px}
+.modal .left{flex:1}
+.modal .right{width:320px}
+
+/* Overlay كامل الحسابات */
+#accountsOverlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#111;
+  color:#fff;
+  z-index:9999;
+  overflow:auto;
+  padding:40px;
+}
+#accountsOverlay button{
+  position:absolute;
+  top:20px;
+  right:30px;
+  font-size:24px;
+  background:none;
+  border:none;
+  color:#fff;
+  cursor:pointer;
+}
+#accountsOverlay h2{
+  margin-top:0;
+}
+#accountsOverlay .account-box{
+  flex:1;
+  min-width:200px;
+  background:#222;
+  padding:20px;
+  border-radius:12px;
+  text-align:center;
+  cursor:pointer;
+  transition:0.3s;
+}
+#accountsOverlay .account-box:hover{
+  background:red;
+  color:#fff;
+}
+
+footer{margin-top:40px;padding:30px 20px;text-align:center;color:#fff}
+
+@media(max-width:720px){
+  .hero{flex-direction:column;align-items:flex-start}
+  .cart-side{width:100%;}
+  .modal .box{flex-direction:column}
+  #accountsOverlay .account-box{min-width:100%;}
+}
+  </style>
+<style>
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+#logoLoader img {
+  animation: spin 3s linear infinite;
+}
+</style>
+
+</head>
+<body>
+<!-- لوغو متحرك -->
+<div id="logoLoader" style="text-align:center;margin-top:50px;">
+  <img src="c7da9690-04c0-44ef-8cc1-dbff335ab05d.png" alt="Logo" style="width:150px;height:150px;">
+</div>
+
+
+<header>
+  <div class="logo">
+    <div class="mark">R</div>
+    <div>
+      <div class="site-name">R.STORE.com</div>
+      <div class="muted">متجر ريان يرحب بكم</div>
+    </div>
+  </div>
+
+  <div class="search">
+    <input id="searchInput" placeholder="ابحث عن منتج، علامة، أو فئة..." />
+    <button id="searchBtn">بحث</button>
+  </div>
+
+  <nav>
+    <a href="#accounts">حسابات</a>
+    <a href="#subscriptions">اشتراكات</a>
+    <a href="#offers">أحدث العروض</a>
+    <a href="#discounts">تخفيضات</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="left">
+      <h1>تسوّق كل ما تحتاجه في R.STORE</h1>
+      <p class="muted">واجهة بسيطة وقابلة للتطوير — هذا قالب جاهز لتبدأ به متجرك.</p>
+      <div class="cta"><button id="shopAll">تسوّق الآن</button></div>
+    </div>
+    <div class="right">
+      <!-- empty for future banner -->
+    </div>
+  </section>
+
+  <section>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 style="color:#fff">قيد التطوير</h3>
+      <div class="muted">عرض 1–8 من 24</div>
+    </div>
+
+    <div id="products" class="products"></div>
+  </section>
+
+  <footer>
+    © <span id="year"></span> R.STORE.com — جميع الحقوق محفوظة
+  </footer>
+</main>
+
+<button id="cartBtn" class="cart-toggle" title="السلة">🛒 <span id="cartCount" style="margin-inline-start:6px;font-weight:700">0</span></button>
+
+<aside id="cartSide" class="cart-side" aria-hidden="true">
+  <header><strong>سلة التسوق</strong><button id="closeCart" style="float:right">✕</button></header>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-footer">
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div>المجموع:</div><div id="cartTotal">0 د.ج</div></div>
+    <button id="checkoutBtn" style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:800">الدفع الوهمي</button>
+  </div>
+</aside>
+
+<div id="modal" class="modal" aria-hidden="true">
+  <div class="box">
+    <div class="left" id="modalLeft"></div>
+    <div class="right" id="modalRight"></div>
+  </div>
+</div>
+
+<!-- Overlay كامل الحسابات -->
+<div id="accountsOverlay">
+  <button id="closeAccountsOverlay">✕</button>
+  <h2>قسم الحسابات</h2>
+  <div style="display:flex;flex-wrap:wrap;gap:20px;margin-top:20px;">
+    <div class="account-box"><img src="https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg" style="width:40px;height:40px;display:block;margin:auto;">حسابات تيك توك</div>
+    <div class="account-box"><img src="https://upload.wikimedia.org/wikipedia/commons/1/15/Garena_Free_Fire_logo.png" style="width:40px;height:40px;display:block;margin:auto;">حسابات فري فاير</div>
+    <div class="account-box"><img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg" style="width:40px;height:40px;display:block;margin:auto;">حسابات ستيم</div>
+    <div class="account-box"><img src="https://upload.wikimedia.org/wikipedia/en/9/98/Discord_logo.svg" style="width:40px;height:40px;display:block;margin:auto;">حسابات ديسكورد</div>
+  </div>
+</div>
+
+<!-- Steam Modal -->
+<div id="steamModal" style="display:none;position:fixed;inset:0;background:rgba(11,31,65,0.95);color:#fff;z-index:100000;align-items:center;justify-content:center;padding:40px;">
+  <div style="max-width:720px;width:95%;background:transparent;border-radius:12px;position:relative;"> 
+    <button id="closeSteamModal" style="position:absolute;top:-10px;left:-10px;background:#fff;color:#0b1220;border-radius:50%;width:36px;height:36px;border:none;font-size:18px;cursor:pointer">✕</button>
+    <h2 style="text-align:center;font-size:26px;margin:0 0 16px 0;font-weight:800">تخفيض 50% لكل الحسابات</h2>
+    <div style="display:flex;gap:20px;align-items:center;justify-content:center;flex-wrap:wrap;background:rgba(255,255,255,0.03);padding:18px;border-radius:12px;">
+      <img src="https://upload.wikimedia.org/wikipedia/en/5/5e/GTA_V_cover.jpg" alt="GTA V" style="width:160px;height:160px;object-fit:cover;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);" />
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <strong style="font-size:20px">عرض خاص: GTA V</strong>
+        <div style="font-weight:800;font-size:18px">السعر: 600 د.ج</div>
+        <div class="muted" style="color:rgba(255,255,255,0.8);">احصل على نسخة بحساب ستيم مع التخفيض 50% لفترة محدودة.</div>
+        <button id="steamBuy" style="margin-top:8px;padding:10px 14px;border-radius:8px;border:none;background:#0ea5e9;color:#fff;font-weight:800;cursor:pointer;">أضف إلى السلة</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var steamBox = document.querySelector('#accountsOverlay .account-box:nth-child(3)');
+  if(steamBox){ steamBox.addEventListener('click', function(e){ e.preventDefault(); document.getElementById('steamModal').style.display = 'flex'; }); }
+  var close = document.getElementById('closeSteamModal');
+  if(close) close.addEventListener('click', function(){ document.getElementById('steamModal').style.display = 'none'; });
+  var steamBuy = document.getElementById('steamBuy');
+  if(steamBuy){ steamBuy.addEventListener('click', function(){
+    // إضافة المنتج الوهمي إلى السلة
+    var prod = {id: 999, title: 'GTA V (عرض ستيم)', price:600, desc: 'عرض خاص لحسابات ستيم', img: 'https://upload.wikimedia.org/wikipedia/en/5/5e/GTA_V_cover.jpg'};
+    try{
+      var cart = JSON.parse(localStorage.getItem('rstore_cart')||'{}');
+      cart[prod.id] = cart[prod.id] ? {...cart[prod.id], qty: cart[prod.id].qty+1} : {id:prod.id,title:prod.title,price:prod.price,img:prod.img,qty:1};
+      localStorage.setItem('rstore_cart', JSON.stringify(cart));
+      // تحديث العرض الموجود في الصفحة إذا كانت الدوال موجودة
+      if(typeof renderCart === 'function') renderCart();
+      if(typeof toast === 'function') toast('أضيف GTA V إلى السلة');
+      document.getElementById('steamModal').style.display = 'none';
+    }catch(err){ console.error(err); alert('حدث خطأ أثناء الإضافة'); }
+  }); }
+});
+</script>
+
+<script>
+const productsData = [
+  {id:1,title:'سماعة ألعاب لاسلكية',price:12900,desc:'جودة صوت ممتازة وميكروفون مدمج',img:'https://picsum.photos/seed/1/600/400'},
+  {id:2,title:'ماوس احترافي',price:8900,desc:'سلكي بدقة عالية وأزرار قابلة للبرمجة',img:'https://picsum.photos/seed/2/600/400'},
+  {id:3,title:'كيبورد ميكانيكي RGB',price:16900,desc:'إضاءات قابلة للتخصيص ومفاتيح متينة',img:'https://picsum.photos/seed/3/600/400'},
+  {id:4,title:'شاشة 24" فول اتش دي',price:42900,desc:'معدل تحديث 75Hz ووقت استجابة سريع',img:'https://picsum.photos/seed/4/600/400'},
+  {id:5,title:'حقيبة ظهر للألعاب',price:7900,desc:'تخزين مريح ومقاطع حماية للحاسوب',img:'https://picsum.photos/seed/5/600/400'},
+  {id:6,title:'كابل شحن سريع',price:1900,desc:'USB-C يدعم الشحن السريع',img:'https://picsum.photos/seed/6/600/400'},
+  {id:7,title:'كاميرا ويب 1080p',price:13900,desc:'مناسبة للبث المباشر واجتماعات الفيديو',img:'https://picsum.photos/seed/7/600/400'},
+  {id:8,title:'سماعة إن-اير',price:2500,desc:'مريحة وعازلة للضجيج',img:'https://picsum.photos/seed/8/600/400'}
+];
+
+const q = sel => document.querySelector(sel);
+const formatPrice = v => v.toLocaleString('ar-EG') + ' د.ج';
+
+// render products
+function renderProducts(list){
+  const wrap = q('#products'); wrap.innerHTML='';
+  list.forEach(p=>{
+    const card = document.createElement('div'); card.className='card';
+    card.innerHTML = `
+      <img src="${p.img}" alt="${p.title}" loading="lazy" />
+      <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700">${p.title}</div><div class="price">${formatPrice(p.price)}</div></div>
+      <div class="muted">${p.desc}</div>
+      <div class="actions">
+        <button class="btn-wish">♥ إضافة للمفضلة</button>
+        <button class="btn-buy" data-id="${p.id}">أضف إلى السلة</button>
+      </div>`;
+    card.querySelector('img').addEventListener('click',()=>openModal(p));
+    card.querySelector('.btn-buy').addEventListener('click',()=>addToCart(p.id));
+    wrap.appendChild(card);
+  })
+}
+
+// modal
+function openModal(product){
+  q('#modalLeft').innerHTML = `<img src="${product.img}" style="width:100%;height:360px;object-fit:cover;border-radius:8px"/>`;
+  q('#modalRight').innerHTML = `
+    <h2 style="margin:0">${product.title}</h2>
+    <p class="muted">${product.desc}</p>
+    <div style="font-weight:800;margin:12px 0">${formatPrice(product.price)}</div>
+    <button id="mAdd" style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:800">أضف إلى السلة</button>
+    <button id="mClose" style="width:100%;margin-top:8px;padding:10px;border-radius:8px;border:1px solid #e6eef8;background:#fff">إغلاق</button>
+  `;
+  q('#modal').classList.add('open');
+  q('#mClose').addEventListener('click',()=>q('#modal').classList.remove('open'));
+  q('#mAdd').addEventListener('click',()=>{addToCart(product.id);q('#modal').classList.remove('open')});
+}
+
+// cart
+let cart = JSON.parse(localStorage.getItem('rstore_cart')||'{}');
+function saveCart(){localStorage.setItem('rstore_cart',JSON.stringify(cart));}
+function addToCart(id){
+  const p = productsData.find(x=>x.id===id); if(!p) return;
+  cart[id] = cart[id] ? {...cart[id], qty: cart[id].qty+1} : {id:p.id,title:p.title,price:p.price,img:p.img,qty:1};
+  saveCart(); renderCart(); toast('أضيف إلى السلة');
+}
+function removeFromCart(id){ delete cart[id]; saveCart(); renderCart(); }
+function changeQty(id,delta){ if(!cart[id]) return; cart[id].qty = Math.max(1, cart[id].qty + delta); saveCart(); renderCart(); }
+
+function renderCart(){
+  const body = q('#cartBody'); body.innerHTML='';
+  const items = Object.values(cart);
+  let total = 0;
+  if(items.length===0) body.innerHTML = '<div class="muted">السلة فارغة</div>';
+  items.forEach(it=>{
+    total += it.price * it.qty;
+    const el = document.createElement('div'); el.className='cart-item';
+    el.innerHTML = `<img src="${it.img}"/><div style="flex:1;text-align:left"><div style="font-weight:700">${it.title}</div><div class="muted">${formatPrice(it.price)} × ${it.qty}</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><button style="padding:6px;border-radius:6px;border:none;background:#f3f4f6" data-id="${it.id}" class="dec">-</button><button style="padding:6px;border-radius:6px;border:none;background:#f3f4f6" data-id="${it.id}" class="inc">+</button><button style="margin-top:6px;padding:6px;border-radius:6px;border:none;background:#ffefef;color:#c53030" data-id="${it.id}" class="del">حذف</button></div>`;
+    body.appendChild(el);
+  });
+  q('#cartTotal').textContent = formatPrice(total);
+  q('#cartCount').textContent = items.reduce((s,i)=>s+i.qty,0);
+  body.querySelectorAll('.del').forEach(btn=>btn.addEventListener('click',e=>removeFromCart(Number(e.target.dataset.id))));
+  body.querySelectorAll('.inc').forEach(btn=>btn.addEventListener('click',e=>changeQty(Number(e.target.dataset.id),1)));
+  body.querySelectorAll('.dec').forEach(btn=>btn.addEventListener('click',e=>changeQty(Number(e.target.dataset.id),-1)));
+}
+
+// toast
+function toast(txt){
+  const el = document.createElement('div'); el.textContent=txt; el.style= 'position:fixed;right:20px;bottom:100px;background:#111;color:#fff;padding:10px;border-radius:8px;'; document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1400);
+}
+
+// events
+q('#cartBtn').addEventListener('click',()=>{q('#cartSide').classList.add('open');q('#cartSide').setAttribute('aria-hidden','false')});
+q('#closeCart').addEventListener('click',()=>{q('#cartSide').classList.remove('open');q('#cartSide').setAttribute('aria-hidden','true')});
+q('#searchBtn').addEventListener('click',()=>{const qv=q('#searchInput').value.trim().toLowerCase(); renderProducts(productsData.filter(p=>p.title.toLowerCase().includes(qv)||p.desc.toLowerCase().includes(qv)))})
+
+q('#shopAll').addEventListener('click',()=>renderProducts(productsData));
+q('#checkoutBtn').addEventListener('click',()=>{alert('هذه نسخة تجريبية — رصيد السلة: '+q('#cartTotal').textContent); cart={}; saveCart(); renderCart(); q('#cartSide').classList.remove('open')});
+
+// Overlay الحسابات
+q('nav a[href="#accounts"]').addEventListener('click', function(e){
+  e.preventDefault();
+  q('#accountsOverlay').style.display='block';
+});
+q('#closeAccountsOverlay').addEventListener('click', function(){
+  q('#accountsOverlay').style.display='none';
+});
+
+// init
+document.getElementById('year').textContent = new Date().getFullYear();
+renderProducts(productsData);
+renderCart();
+q('#modal').addEventListener('click',e=>{ if(e.target===q('#modal')) q('#modal').classList.remove('open')});
+window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ q('#modal').classList.remove('open'); q('#cartSide').classList.remove('open'); } });
+</script>
+<!-- Modal لطلب حساب تيك توك -->
+<div id="tiktokModal" class="modal">
+  <div class="box" style="max-width:400px;flex-direction:column;position:relative;">
+    <button id="closeTiktokModal" style="position:absolute;top:10px;right:10px;font-size:24px;background:none;border:none;color:#000;cursor:pointer">✕</button>
+    <h2 style="text-align:center;margin-top:20px">طلب حساب تيك توك</h2>
+    <form id="tiktokForm" style="display:flex;flex-direction:column;gap:12px;margin-top:20px;">
+      <input type="text" placeholder="الاسم" name="name" required style="padding:10px;border-radius:6px;border:1px solid #ccc;">
+      <input type="email" placeholder="البريد الإلكتروني" name="email" required style="padding:10px;border-radius:6px;border:1px solid #ccc;">
+      <input type="number" placeholder="عدد المتابعين" name="followers" required style="padding:10px;border-radius:6px;border:1px solid #ccc;">
+      <button type="submit" style="padding:12px;border:none;border-radius:8px;background:#1e90ff;color:#fff;font-weight:700;cursor:pointer;margin-top:10px;">تأكيد الطلبية</button>
+    </form>
+  </div>
+</div>
+
+<style>
+#tiktokModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10000; align-items:center; justify-content:center; }
+</style>
+
+<script>
+// فتح المودال عند الضغط على "حسابات تيك توك"
+q('#accountsOverlay .account-box:nth-child(1)').addEventListener('click', function(){
+  q('#tiktokModal').style.display = 'flex';
+});
+
+// اغلاق المودال
+q('#closeTiktokModal').addEventListener('click', function(){
+  q('#tiktokModal').style.display = 'none';
+});
+
+// التعامل مع ارسال النموذج
+q('#tiktokForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = this.name.value;
+  const email = this.email.value;
+  const followers = this.followers.value;
+  alert(`تم إرسال الطلب!\nالاسم: ${name}\nالإيميل: ${email}\nعدد المتابعين: ${followers}`);
+  this.reset();
+  q('#tiktokModal').style.display = 'none';
+});
+</script>
+<style>
+#tiktokModal { 
+  display:none; 
+  position:fixed; 
+  inset:0; 
+  background:rgba(0,0,0,0.6); 
+  z-index:10000; 
+  align-items:center; 
+  justify-content:center; 
+}
+</style>
+
+<script>
+// فتح المودال عند الضغط على "حسابات تيك توك"
+q('#accountsOverlay .account-box:nth-child(1)').addEventListener('click', function(){
+  q('#tiktokModal').style.display = 'flex';
+});
+
+// اغلاق المودال
+q('#closeTiktokModal').addEventListener('click', function(){
+  q('#tiktokModal').style.display = 'none';
+});
+
+// التعامل مع ارسال النموذج
+q('#tiktokForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = this.name.value;
+  const email = this.email.value;
+  const followers = this.followers.value;
+  alert(`تم إرسال الطلب!\nالاسم: ${name}\nالإيميل: ${email}\nعدد المتابعين: ${followers}`);
+  this.reset();
+  q('#tiktokModal').style.display = 'none';
+});
+</script>
+
+
+<!-- Free Fire Unavailable Modal -->
+<div id="ffModal" class="modal" style="display:none;align-items:center;justify-content:center;z-index:100001;">
+  <div class="box" style="max-width:360px;padding:25px;position:relative;background:#fff;border:2px solid red;border-radius:10px;z-index:100003;">
+    <button onclick="document.getElementById('ffModal').style.display='none'" style="position:absolute;top:8px;right:8px;font-size:24px;color:red;background:none;border:none;cursor:pointer;">✕</button>
+    <h2 style="color:red;text-align:center;margin-bottom:10px;">غير متوفر حاليا</h2>
+  </div>
+</div>
+
+<!-- Discord Request Modal -->
+<div id="discordModal" class="modal" style="display:none;align-items:center;justify-content:center;z-index:100002;">
+  <div class="box" style="max-width:400px;width:95%;flex-direction:column;position:relative;background:#fff;border-radius:10px;padding:20px;z-index:100004;">
+    <button onclick="document.getElementById('discordModal').style.display='none'" style="position:absolute;top:10px;right:10px;font-size:24px;background:none;border:none;color:#000;cursor:pointer">✕</button>
+    <h2 style="text-align:center;margin-top:10px;">طلب حساب ديسكورد</h2>
+    <form id="discordForm" style="display:flex;flex-direction:column;gap:12px;margin-top:20px;">
+      <input type="text" placeholder="الاسم" name="name" required style="padding:10px;border-radius:6px;border:1px solid #ccc;">
+      <input type="email" placeholder="الإيميل" name="email" required style="padding:10px;border-radius:6px;border:1px solid #ccc;">
+      <label style="font-weight:600;">عمر الحساب:</label>
+      <select name="age" required style="padding:10px;border-radius:6px;border:1px solid #ccc;">
+        <option value="2 سنوات">سنتين</option>
+        <option value="3 سنوات">ثلاث سنوات</option>
+        <option value="4 سنوات">أربع سنوات</option>
+      </select>
+      <button type="submit" style="padding:12px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-weight:700;cursor:pointer;margin-top:10px;">طلب المنتج</button>
+    </form>
+  </div>
+</div>
+
+<script>
+// open Free Fire modal
+document.querySelector('#accountsOverlay .account-box:nth-child(2)').onclick = function(){
+  document.getElementById('ffModal').style.display='flex';
+};
+
+// open Discord modal
+document.querySelector('#accountsOverlay .account-box:nth-child(4)').onclick = function(){
+  document.getElementById('discordModal').style.display='flex';
+};
+
+// handle discord form
+document.getElementById('discordForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  alert("تم إرسال طلب حساب ديسكورد ✅\nالاسم: " + this.name.value + "\nالإيميل: " + this.email.value + "\nعمر الحساب: " + this.age.value);
+  this.reset();
+  document.getElementById('discordModal').style.display='none';
+});
+</script>
+
+</body>
+</html>
